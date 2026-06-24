@@ -1,0 +1,22 @@
+%%{init: {'theme':'base','themeVariables':{
+  'fontFamily':'PingFang SC, Hiragino Sans GB, Helvetica, Arial, sans-serif',
+  'fontSize':'15px',
+  'primaryColor':'#FCFBF8','primaryBorderColor':'#D6D4CC','primaryTextColor':'#3A3A37',
+  'lineColor':'#9A988F','tertiaryColor':'#FFFFFF'
+}}}%%
+flowchart TD
+  IN(["输入 X<br/><small>来源说明</small>"])
+  subgraph core["① 核心处理"]
+    direction LR
+    P1["处理步骤"] --> D1{"判定?"}
+  end
+  OUT(["输出 / 结束"])
+
+  IN --> core
+  D1 -->|是| OUT
+  D1 -.->|"否 · 回退"| P1
+
+  classDef router fill:#FBF3E2,stroke:#C99A3C,color:#8A5A12;
+  classDef io fill:#F3F1EA,stroke:#CFCCC2,color:#3A3A37;
+  class D1 router;
+  class IN,OUT io;

@@ -26,7 +26,15 @@ curl -fsSL https://raw.githubusercontent.com/24kchengYe/mermaid-flowchart-skill/
 **B. 当普通教程**
 直接看 [`SKILL.md`](./SKILL.md),命令、模板、坑全在里面,照着做即可。
 
-## 30 秒上手
+## 一键脚本(最省事)
+
+仓库带了 `render.sh` + `example.mmd`,clone 下来直接:
+```bash
+./render.sh example.mmd          # 出 example.svg + example.png
+./render.sh 你的图.mmd 输出名      # 自动配好 puppeteer/mmdc,支持超大图
+```
+
+## 30 秒上手(手动)
 
 ```bash
 echo '{"args":["--no-sandbox"]}' > /tmp/puppeteer.json
