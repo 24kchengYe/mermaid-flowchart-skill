@@ -97,10 +97,63 @@ flowchart TD
    </details>
    ````
 
-## 给"画整个项目流程"的同事(本 skill 的典型用法)
+## 画超大流程图(多仓库 / 多文档 / 整个系统)
 
-让同事画完整项目流程时,引导 ta:
-1. **先列出主干节点**(入口→各处理阶段→判定→出口),别一上来画全;骨架对了再加分支。
-2. **一个图一条主线**;子系统/子流程拆成多张图,别挤一张。
-3. 用上面的模板和形状约定,渲染出 png+svg,md 里附 `<details>` mermaid 源。
-4. 细节写在图周围的正文里,不进图。
+单张图塞几百个节点 = 没法看,且 mmdc 会报 `maxTextSize`/`maxEdges` 错。超大系统的正解是 **拆 + 分层 + 索引 + 交叉链接**,不是硬画一张。
+
+### 工作流(AI 按这个做)
+
+1. **列 source 清单**:先把要覆盖的仓库 / 文档逐个列出(路径 + 一句话职责),别急着画。这就是"知识图谱"的目录,也方便人核对覆盖面。
+2. **每个 source 抽一条主流程**:逐个仓库 / 模块画出它内部的流程(用基础模板),一个 source 一张子图。
+3. **画一张顶层总览**:把每个子系统当成**单个节点**,只画**子系统之间**怎么连(谁触发谁、数据往哪流)。顶层只放 8–15 个节点,保持干净。
+4. **建索引 + 交叉链接**:一个 `index.md`,顶层图在最上,下面列每张子图链接;顶层图节点用 `click` 跳到对应子图。
+5. **标注待核对**:多仓库大系统里 AI 容易漏连线 / 脑补,产出时明确写"⚠️ 待人核对",图的正确性必须人 review。
+
+### subgraph 分组(一张图里圈模块)
+
+```
+flowchart TD
+  subgraph ingest["① 接入层"]
+    direction LR
+    A[拉取] --> B[清洗]
+  end
+  subgraph core["② 核心处理"]
+    C{判定} --> D[执行]
+  end
+  ingest --> core
+```
+`subgraph ... end` 把相关节点框成一块,大图里一眼分区;子图内可加 `direction LR` 单独控方向。
+
+### 节点 ID 跨图保持一致
+
+同一个组件在不同图里**用同一个 id**(按子系统前缀:`judge_table`、`fix_table`),顶层图和子图才对得上、交叉链接才不乱。
+
+### 交叉链接(点节点跳转)
+
+```
+click core "subsystems/core.md" "打开核心处理子图"
+```
+GitHub 渲染的 `<details>` mermaid 块和交互式 HTML 里可点跳转(静态 png/svg 点不了,但 GitHub 网页可以)→ **超大图务必把 mermaid 源放进 md,别只给图片**。
+
+### 大图渲染:放开 mmdc 上限
+
+节点 / 边一多,mmdc 会报 `Maximum text size in diagram exceeded` 或默认 500 边上限。建个 config 放开:
+```bash
+cat > /tmp/mmdc.json <<'JSON'
+{ "maxTextSize": 9000000, "maxEdges": 5000,
+  "flowchart": { "htmlLabels": true, "curve": "basis" } }
+JSON
+npx -y @mermaid-js/mermaid-cli@latest -i big.mmd -o big.svg -c /tmp/mmdc.json -p /tmp/puppeteer.json
+```
+- 宽系统用 `flowchart LR`(左右)比 `TD`(上下)更省纵向、更好读。
+- 超大图**优先出 svg**(矢量,放大不糊);png 用 `-s 2`(别 `-s 4`,大图会爆内存 / 文件超大)。
+
+### 铁律:拆,别硬画一张
+
+- 一张图 > ~25 节点就该拆子图;顶层总览 ≤ 15 节点。
+- 宁可 **5 张清楚的图 + 一个索引**,不要 1 张谁都看不懂的巨图。
+- 细节(状态、计数、待办)写在图周围正文,不进图。
+
+## 给"画整个项目流程"的同事(快速版)
+
+懒得读全篇就记四步:① 列出要覆盖的仓库/文档清单 → ② 每个画一张子图(基础模板)→ ③ 画一张只连子系统的顶层总览 → ④ 建 `index.md` 串起来、png+svg 都出、mermaid 源附 `<details>`。复杂系统**一定拆多张**,别挤一张。
